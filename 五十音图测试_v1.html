@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>随机展示五十音图</title>
+    
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: 
+                radial-gradient(
+                    circle, 
+                    oklch(0.15 0.2 330 / 0), 
+                    oklch(0.15 0.2 330 / 1)
+                ),
+                linear-gradient(
+                    344deg in oklch,
+                    oklch(0.3 0.37 310),
+                    oklch(0.35 0.37 330),
+                    oklch(0.3 0.37 310)
+                );
+        }
+
+        .container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .toolbar{
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        @property --bg-angle {
+            inherits: false;
+            initial-value: 0deg;
+            syntax: "<angle>";
+        }
+
+        /**
+        * To animate the gradient, we set the custom property to 1 full
+        * rotation. The animation starts at the default value of `0deg`.
+        */
+        @keyframes spin {
+            to {
+                --bg-angle: 360deg;
+            }
+        }
+
+        .element {
+            flex: 0 0 130px;
+            height: 160px;
+            /* box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.5);
+            border: 1px solid rgba(127, 255, 255, 0.25); */
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px;
+            position: relative;
+            animation: spin 2.5s infinite linear paused;
+            background: linear-gradient(to bottom, oklch(0.1 0.2 240 / 0.95), oklch(0.1 0.2 240 / 0.95)) padding-box, conic-gradient(from var(--bg-angle) in oklch longer hue, oklch(1 0.37 0) 0 0) border-box;
+            border: 3px solid transparent;
+            box-shadow: oklch(0.1 0.37 315 / 0.25) 0.125rem 0.25rem 0.25rem 0.5rem;
+            color: white;
+            border-radius: 1rem;
+            &:hover {
+                animation-play-state: running;
+                color: #01fae5;
+                .symbol{
+                    font-size: 70px;
+                }
+            }
+        }
+
+        .element .symbol {
+            position: absolute;
+            top: 40px;
+            left: 0px;
+            right: 0px;
+            font-size: 60px;
+            font-weight: bold;
+            transition: top 0.5s;
+            
+        }
+        .element .writeInput {
+            position: absolute;
+            bottom: 10px;
+            left: 24%;
+            right: 0px;
+            font-size: 20px;
+            font-weight: bold;
+            color: rgb(0 164 247);
+            text-align: center;
+            border: none;
+            border-bottom: solid 2px;;
+            width: 50%;
+            transition: top 0.5s;
+            font-size: 30px;
+            background-color: transparent;
+            &:focus-visible{
+                outline: none;
+            }
+        }
+
+        button {
+            background-color: #4CAF50;
+            /* 绿色背景 */
+            border: 2px solid #fff;
+            /* 无边框 */
+            color: white;
+            /* 白色文字 */
+            padding: 15px 32px;
+            /* 内边距 */
+            text-align: center;
+            /* 文字居中 */
+            text-decoration: none;
+            /* 无下划线 */
+            display: inline-block;
+            /* 行内块元素 */
+            font-size: 20px;
+            /* 字体大小 */
+            font-weight: bold;
+            /* 字体粗细 */
+            margin: 4px 2px;
+            /* 外边距 */
+            cursor: pointer;
+            /* 鼠标指针 */
+            border-radius: 12px;
+            /* 圆角 */
+            transition-duration: 0.4s;
+            /* 过渡时间 */
+        }
+
+        button:hover {
+            background-color: white;
+            /* 白色背景 */
+            color: black;
+            /* 黑色文字 */
+            border: 2px solid #4CAF50;
+            /* 绿色边框 */
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            /* transition: opacity 0.3s; */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            background: 
+                linear-gradient(to bottom, oklch(0.1 0.2 240 / 0.95), 
+                    oklch(0.1 0.2 240 / 0.95)) padding-box, 
+                conic-gradient(from var(--bg-angle) in oklch longer hue, 
+                    oklch(1 0.37 0) 0 0) border-box;
+            border: 6px solid transparent;
+            box-shadow: oklch(0.1 0.37 315 / 0.25) 0.125rem 0.25rem 0.25rem 0.5rem;
+            color: white;
+            border-radius: 1rem;
+            &:hover {
+                animation-play-state: running;
+            }
+        }
+
+        .modal-container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .modal-content div {
+            flex: 1;
+            font-size: 100px;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var fiftySoundsAll = [
+                "あ", "ア", "い", "イ", "う", "ウ", "え", "エ", "お", "オ",
+                "か", "カ", "き", "キ", "く", "ク", "け", "ケ", "こ", "コ",
+                "さ", "サ", "し", "シ", "す", "ス", "せ", "セ", "そ", "ソ",
+                "た", "タ", "ち", "チ", "つ", "ツ", "て", "テ", "と", "ト",
+                "な", "ナ", "に", "ニ", "ぬ", "ヌ", "ね", "ネ", "の", "ノ",
+                "は", "ハ", "ひ", "ヒ", "ふ", "フ", "へ", "ヘ", "ほ", "ホ",
+                "ま", "マ", "み", "ミ", "む", "ム", "め", "メ", "も", "モ",
+                "や", "ヤ", "ゆ", "ユ", "よ", "ヨ",
+                "ら", "ラ", "り", "リ", "る", "ル", "れ", "レ", "ろ", "ロ",
+                "わ", "ワ", "を", "ヲ", "ん", "ン",
+            ];
+            var fiftySounds = [
+                { hiragana: "あ", katakana: "ア", romaji: "a" },
+                { hiragana: "い", katakana: "イ", romaji: "i" },
+                { hiragana: "う", katakana: "ウ", romaji: "u" },
+                { hiragana: "え", katakana: "エ", romaji: "e" },
+                { hiragana: "お", katakana: "オ", romaji: "o" },
+                { hiragana: "か", katakana: "カ", romaji: "ka" },
+                { hiragana: "き", katakana: "キ", romaji: "ki" },
+                { hiragana: "く", katakana: "ク", romaji: "ku" },
+                { hiragana: "け", katakana: "ケ", romaji: "ke" },
+                { hiragana: "こ", katakana: "コ", romaji: "ko" },
+                { hiragana: "さ", katakana: "サ", romaji: "sa" },
+                { hiragana: "し", katakana: "シ", romaji: "shi" },
+                { hiragana: "す", katakana: "ス", romaji: "su" },
+                { hiragana: "せ", katakana: "セ", romaji: "se" },
+                { hiragana: "そ", katakana: "ソ", romaji: "so" },
+                { hiragana: "た", katakana: "タ", romaji: "ta" },
+                { hiragana: "ち", katakana: "チ", romaji: "chi" },
+                { hiragana: "つ", katakana: "ツ", romaji: "tsu" },
+                { hiragana: "て", katakana: "テ", romaji: "te" },
+                { hiragana: "と", katakana: "ト", romaji: "to" },
+                { hiragana: "な", katakana: "ナ", romaji: "na" },
+                { hiragana: "に", katakana: "ニ", romaji: "ni" },
+                { hiragana: "ぬ", katakana: "ヌ", romaji: "nu" },
+                { hiragana: "ね", katakana: "ネ", romaji: "ne" },
+                { hiragana: "の", katakana: "ノ", romaji: "no" },
+                { hiragana: "は", katakana: "ハ", romaji: "ha" },
+                { hiragana: "ひ", katakana: "ヒ", romaji: "hi" },
+                { hiragana: "ふ", katakana: "フ", romaji: "fu" },
+                { hiragana: "へ", katakana: "ヘ", romaji: "he" },
+                { hiragana: "ほ", katakana: "ホ", romaji: "ho" },
+                { hiragana: "ま", katakana: "マ", romaji: "ma" },
+                { hiragana: "み", katakana: "ミ", romaji: "mi" },
+                { hiragana: "む", katakana: "ム", romaji: "mu" },
+                { hiragana: "め", katakana: "メ", romaji: "me" },
+                { hiragana: "も", katakana: "モ", romaji: "mo" },
+                { hiragana: "や", katakana: "ヤ", romaji: "ya" },
+                { hiragana: "ゆ", katakana: "ユ", romaji: "yu" },
+                { hiragana: "よ", katakana: "ヨ", romaji: "yo" },
+                { hiragana: "ら", katakana: "ラ", romaji: "ra" },
+                { hiragana: "り", katakana: "リ", romaji: "ri" },
+                { hiragana: "る", katakana: "ル", romaji: "ru" },
+                { hiragana: "れ", katakana: "レ", romaji: "re" },
+                { hiragana: "ろ", katakana: "ロ", romaji: "ro" },
+                { hiragana: "わ", katakana: "ワ", romaji: "wa" },
+                { hiragana: "を", katakana: "ヲ", romaji: "wo" },
+                { hiragana: "ん", katakana: "ン", romaji: "n" }
+            ];
+            // 打乱数组顺序的函数
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // 动态生成HTML元素并插入到页面中
+            function displaySounds(num) {
+                $('body').find('.element').remove(); // 清除之前的元素
+                shuffle(fiftySoundsAll);
+                let show = fiftySoundsAll;
+                if (num) {
+                    show = fiftySoundsAll.slice(0, num);
+                }
+                show.forEach(function (sound) {
+                    var element = $('<div class="element"><div class="symbol">' + sound + '</div></div>');
+                    $('.container').append(element);
+                    element.click(function () {
+                        const info = fiftySounds.find(item => item.hiragana === sound || item.katakana === sound);
+                        $('#modal').fadeIn();
+                        $('#modal-content').html(
+                            '<div class="modal-container">' +
+                            '<div>' + info.hiragana + '</div>' +
+                            '<div>' + info.katakana + '</div>' +
+                            '<div>' + info.romaji + '</div>' +
+                            '</div>'
+                        );
+                    });
+                    $('.container').append(element);
+                });
+            }
+
+            // 测试拼写
+            function handleTestWrite() {
+                // 移除所有的.writeInput
+                $('.writeInput').remove();
+                $('.element').each((index, dom) => {
+                    const element = $('<input type="text" class="writeInput" />');
+                    $(dom).append(element);
+                });
+                // 添加transition效果,使.element .symbol的top变为25px
+                $('.element .symbol').css('top', '25px');
+                $('.writeInput')[0].focus();
+                $('.writeInput').css('top', '106px');
+                $('.writeInput').click(function (e) {
+                    e.stopPropagation();
+                });
+                $('.writeInput').on('input', function(){
+                    const sound = $(this).parent().find('.symbol').text();
+                    fiftySounds.forEach(item => {
+                        const right = () => {
+                            $(this).css('color', '#06f306');
+                            $(this).css('border', 'none');
+                            $(this).blur();
+                            $(this).attr('disabled', 'disabled');
+                            $(this).parent().next().find('.writeInput').focus();
+                            $(this).parent().css('color', '#06f306');
+                            $(this).parent().find('.symbol').css('top', '30px');
+                            $(this).css('top', 'unset');
+                        }
+                        const wrong = () => {
+                            $(this).css('color', 'red');
+                            $(this).parent().css('color', 'red');
+                        }
+                        if ((item.hiragana === sound || item.katakana === sound)) {
+                            if (item.romaji === "wo" && ($(this).val().length === 1 || $(this).val().length === 2)) {
+                                if ($(this).val() === "wo" || $(this).val() === "o") {
+                                    right()
+                                } else {
+                                    wrong()
+                                }
+                                return;
+                            }
+                            if (item.romaji === "fu" && $(this).val().length === 2) {
+                                if ($(this).val() === "hu" || $(this).val() === "fu") {
+                                    right()
+                                } else {
+                                    wrong()
+                                }
+                                return;
+                            }
+                            if ($(this).val().length === item.romaji.length) {
+                                if (item.romaji === $(this).val()) {
+                                    right()
+                                } else {
+                                    wrong()
+                                }
+                            }
+                            
+                        }
+                    });
+                });
+            }
+
+            // 初始展示
+            displaySounds();
+
+            // 按钮点击事件
+            $('#shuffleButton').click(function () {
+                const num = $('#shuffleNum').val() || 20;
+                displaySounds(num);
+            });
+            $('#showAll').click(function () {
+                displaySounds();
+            });
+            $('#testWrite').click(function () {
+                handleTestWrite();
+            });
+
+            // 点击模态框外部关闭模态框
+            $(window).click(function (event) {
+                if (event.target.id === 'modal') {
+                    $('#modal').fadeOut();
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="toolbar">
+        <div class="shuffle-item">
+            <button id="shuffleButton">随机</button>
+        </div>
+        <button id="showAll">显示全部</button>
+        <button id="testWrite">测试拼写</button>
+    </div>
+    <div class="container">
+    </div>
+    <!-- 模态框 -->
+    <div id="modal" class="modal">
+        <div class="modal-content" id="modal-content">
+        </div>
+    </div>
+</body>
+
+</html>
